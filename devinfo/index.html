@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devinfo Editor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827;
+            color: #d1d5db;
+        }
+        .card {
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-primary {
+            background-color: #4f46e5;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #4338ca;
+        }
+        .btn-secondary {
+            background-color: #374151;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #4b5563;
+        }
+        .btn-danger {
+            background-color: #dc2626;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #b91c1c;
+        }
+        .file-drop-zone {
+            border: 2px dashed #4b5563;
+            transition: all 0.2s ease-in-out;
+        }
+        .file-drop-zone.dragover {
+            border-color: #4f46e5;
+            background-color: #2a3444;
+        }
+        table thead th {
+            background-color: #374151;
+        }
+        table td, table th {
+            border-bottom: 1px solid #374151;
+        }
+        [contenteditable]:focus {
+            outline: 2px solid #4f46e5;
+            background-color: #374151;
+        }
+        .modal-backdrop {
+            background-color: rgba(0,0,0,0.7);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white">Devinfo Editor</h1>
+            <p class="text-lg text-gray-400 mt-2">A fully-featured graphical editor for Pixel devinfo partitions.</p>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column: Controls & Header Info -->
+            <aside class="lg:col-span-1 space-y-8">
+                <div id="upload-card" class="card p-6">
+                    <h2 class="text-xl font-semibold text-white mb-4">1. Load File</h2>
+                    <div id="file-drop-zone" class="file-drop-zone p-8 text-center rounded-lg cursor-pointer">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                        <p class="mt-4 text-gray-400">Drag & drop a <code class="bg-gray-700 px-1 rounded">devinfo.bin</code> file here</p>
+                        <p class="text-sm text-gray-500 mt-1">or</p>
+                        <button id="browse-btn" class="btn btn-secondary mt-2 px-4 py-2 rounded-md font-medium">Browse Files</button>
+                    </div>
+                    <input type="file" id="file-input" class="hidden" accept=".bin">
+                </div>
+
+                <div id="header-info-card" class="card p-6 hidden">
+                    <h2 class="text-xl font-semibold text-white mb-4">Header Information</h2>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="font-medium text-gray-400">Magic:</span>
+                            <code id="header-magic" class="bg-gray-700 text-green-400 px-2 py-1 rounded"></code>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="font-medium text-gray-400">Devinfo Version:</span>
+                            <span id="header-version" class="font-mono text-white"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="font-medium text-gray-400">Minor Version (Entries):</span>
+                            <span id="header-entries" class="font-mono text-white"></span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Right Column: Data Table & Actions -->
+            <section id="editor-section" class="lg:col-span-2 card p-6 hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-white">Devinfo Entries</h2>
+                    <div class="space-x-3">
+                        <button id="add-entry-btn" class="btn btn-secondary px-4 py-2 rounded-md font-medium text-sm">Add Entry</button>
+                        <button id="save-btn" class="btn btn-primary px-4 py-2 rounded-md font-medium text-sm">Save & Download</button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-gray-300 uppercase">
+                            <tr>
+                                <th scope="col" class="px-4 py-3 w-24">Type</th>
+                                <th scope="col" class="px-4 py-3 w-48">Name</th>
+                                <th scope="col" class="px-4 py-3">Value</th>
+                                <th scope="col" class="px-4 py-3 w-20 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="devinfo-table-body">
+                           <!-- Rows will be dynamically inserted here -->
+                           <tr><td colspan="4" class="text-center p-8 text-gray-500">Load a devinfo file to see its contents.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div id="entry-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+        <div class="modal-backdrop fixed inset-0"></div>
+        <div class="card relative w-full max-w-lg m-4 p-6">
+            <h3 id="modal-title" class="text-lg font-medium leading-6 text-white mb-4">Add New Entry</h3>
+            <div class="space-y-4">
+                <div>
+                    <label for="modal-type" class="block text-sm font-medium text-gray-300">Type</label>
+                    <select id="modal-type" class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <option>DIUS</option>
+                        <option>DIFR</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="modal-name" class="block text-sm font-medium text-gray-300">Name</label>
+                    <input type="text" id="modal-name" class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="modal-value" class="block text-sm font-medium text-gray-300">Value</label>
+                    <input type="text" id="modal-value" class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button id="modal-cancel" class="btn btn-secondary px-4 py-2 rounded-md">Cancel</button>
+                <button id="modal-save" class="btn btn-primary px-4 py-2 rounded-md">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // --- State Management ---
+        let devinfoData = null;
+
+        // --- DOM Elements ---
+        const fileDropZone = document.getElementById('file-drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const browseBtn = document.getElementById('browse-btn');
+        const headerInfoCard = document.getElementById('header-info-card');
+        const editorSection = document.getElementById('editor-section');
+        const tableBody = document.getElementById('devinfo-table-body');
+        const addEntryBtn = document.getElementById('add-entry-btn');
+        const saveBtn = document.getElementById('save-btn');
+        const entryModal = document.getElementById('entry-modal');
+        const modalCancel = document.getElementById('modal-cancel');
+        const modalSave = document.getElementById('modal-save');
+
+        // --- Core Parsing and Building Logic ---
+
+        /**
+         * Parses the binary data from a devinfo ArrayBuffer.
+         * @param {ArrayBuffer} buffer The raw binary data.
+         * @returns {object|null} Parsed data object or null on failure.
+         */
+        function parseDevinfo(buffer) {
+            if (buffer.byteLength < 128) {
+                alert("Error: File is too small to be a valid devinfo image.");
+                return null;
+            }
+            const view = new DataView(buffer);
+            const decoder = new TextDecoder('ascii');
+
+            // 1. Parse Header
+            const mainMagic = decoder.decode(buffer.slice(0, 4));
+            if (mainMagic !== 'DEVI') {
+                alert(`Error: Invalid file magic. Expected 'DEVI', got '${mainMagic}'.`);
+                return null;
+            }
+            const version = view.getUint16(4, true);
+            const numDiUsEntries = view.getUint32(6, true);
+
+            const header = { magic: mainMagic, version, numDiUsEntries };
+            const entries = [];
+            let offset = 128;
+
+            // 2. Parse Entries
+            while (offset + 12 <= buffer.byteLength) {
+                const entryMagic = decoder.decode(buffer.slice(offset, offset + 4));
+                if (entryMagic !== 'DIFR' && entryMagic !== 'DIUS') {
+                    break; // Stop at unknown magic or padding
+                }
+                
+                const dataLen = view.getUint32(offset + 4, true);
+                const nameLen = view.getUint32(offset + 8, true);
+
+                if (nameLen === 0 && dataLen > 1000) {
+                    break; // Terminator block
+                }
+                if (offset + 12 + dataLen > buffer.byteLength || dataLen < nameLen) {
+                    alert(`Error: Corrupt entry at offset ${offset}. Invalid lengths.`);
+                    break;
+                }
+
+                const name = decoder.decode(buffer.slice(offset + 12, offset + 12 + nameLen)).replace(/\0/g, '');
+                const valueLen = dataLen - nameLen;
+                const value = decoder.decode(buffer.slice(offset + 12 + nameLen, offset + 12 + dataLen)).replace(/\0/g, '');
+
+                entries.push({ type: entryMagic, name, value });
+                offset += 12 + dataLen;
+            }
+
+            return { header, entries };
+        }
+
+        /**
+         * Builds a devinfo binary ArrayBuffer from the state object.
+         * @param {object} data The devinfo data object.
+         * @returns {ArrayBuffer} The generated binary data.
+         */
+        function buildDevinfo(data) {
+            const encoder = new TextEncoder();
+            let totalSize = 128; // Header size
+            const encodedEntries = data.entries.map(entry => {
+                const encodedName = encoder.encode(entry.name);
+                const encodedValue = encoder.encode(entry.value);
+                const nameLen = encodedName.byteLength + 1; // +1 for null terminator
+                const valueLen = encodedValue.byteLength + 1; // +1 for null terminator
+                const dataLen = nameLen + valueLen;
+                totalSize += 12 + dataLen;
+                return { type: entry.type, name: encodedName, value: encodedValue, nameLen, valueLen, dataLen };
+            });
+
+            // Add final terminator block size
+            totalSize += 12;
+
+            const buffer = new ArrayBuffer(totalSize);
+            const view = new DataView(buffer);
+            let offset = 0;
+
+            // 1. Write Header
+            encoder.encode('DEVI').forEach((byte, i) => view.setUint8(offset + i, byte));
+            view.setUint16(4, data.header.version, true);
+            view.setUint32(6, data.entries.filter(e => e.type === 'DIUS').length, true);
+            offset = 128;
+
+            // 2. Write Entries
+            encodedEntries.forEach(entry => {
+                encoder.encode(entry.type).forEach((byte, i) => view.setUint8(offset + i, byte));
+                view.setUint32(offset + 4, entry.dataLen, true);
+                view.setUint32(offset + 8, entry.nameLen, true);
+                offset += 12;
+
+                entry.name.forEach((byte, i) => view.setUint8(offset + i, byte));
+                offset += entry.nameLen;
+
+                entry.value.forEach((byte, i) => view.setUint8(offset + i, byte));
+                offset += entry.valueLen;
+            });
+
+            // 3. Write Terminator
+            encoder.encode('DIFR').forEach((byte, i) => view.setUint8(offset + i, byte));
+            view.setUint32(offset + 4, 4054, true); // Common terminator value
+            view.setUint32(offset + 8, 0, true);
+
+            return buffer;
+        }
+
+        // --- UI Rendering ---
+
+        function renderUI() {
+            if (!devinfoData) return;
+
+            // Render Header
+            headerInfoCard.classList.remove('hidden');
+            document.getElementById('header-magic').textContent = devinfoData.header.magic;
+            document.getElementById('header-version').textContent = devinfoData.header.version;
+            document.getElementById('header-entries').textContent = devinfoData.entries.filter(e => e.type === 'DIUS').length;
+
+            // Render Table
+            editorSection.classList.remove('hidden');
+            tableBody.innerHTML = '';
+            if (devinfoData.entries.length === 0) {
+                 tableBody.innerHTML = `<tr><td colspan="4" class="text-center p-8 text-gray-500">No entries found. You can add one.</td></tr>`;
+                 return;
+            }
+            devinfoData.entries.forEach((entry, index) => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-800';
+                row.innerHTML = `
+                    <td class="px-4 py-3"><span class="px-2 py-1 rounded-full text-xs font-medium ${entry.type === 'DIUS' ? 'bg-indigo-900 text-indigo-300' : 'bg-gray-600 text-gray-300'}">${entry.type}</span></td>
+                    <td class="px-4 py-3 font-mono text-white">${entry.name}</td>
+                    <td class="px-4 py-3 font-mono text-gray-300" contenteditable="true" data-index="${index}">${entry.value}</td>
+                    <td class="px-4 py-3 text-center">
+                        <button class="delete-btn btn btn-danger p-2 rounded-md" data-index="${index}">
+                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // --- Event Handlers ---
+        
+        function handleFile(file) {
+            if (!file || !file.name.endsWith('.bin')) {
+                alert("Please select a valid '.bin' file.");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const buffer = e.target.result;
+                devinfoData = parseDevinfo(buffer);
+                if (devinfoData) {
+                    renderUI();
+                }
+            };
+            reader.onerror = () => alert("Error reading file.");
+            reader.readAsArrayBuffer(file);
+        }
+
+        fileDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileDropZone.classList.add('dragover');
+        });
+        fileDropZone.addEventListener('dragleave', () => fileDropZone.classList.remove('dragover'));
+        fileDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileDropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+        browseBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        tableBody.addEventListener('input', (e) => {
+            if (e.target.hasAttribute('contenteditable')) {
+                const index = parseInt(e.target.dataset.index, 10);
+                devinfoData.entries[index].value = e.target.textContent;
+            }
+        });
+
+        tableBody.addEventListener('click', (e) => {
+            const deleteBtn = e.target.closest('.delete-btn');
+            if (deleteBtn) {
+                const index = parseInt(deleteBtn.dataset.index, 10);
+                if (confirm(`Are you sure you want to delete the entry "${devinfoData.entries[index].name}"?`)) {
+                    devinfoData.entries.splice(index, 1);
+                    renderUI();
+                }
+            }
+        });
+
+        saveBtn.addEventListener('click', () => {
+            if (!devinfoData) {
+                alert("No data loaded to save.");
+                return;
+            }
+            const newBuffer = buildDevinfo(devinfoData);
+            const blob = new Blob([newBuffer], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'devinfo_edited.bin';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        // Modal Logic
+        addEntryBtn.addEventListener('click', () => {
+            document.getElementById('modal-name').value = '';
+            document.getElementById('modal-value').value = '';
+            entryModal.classList.add('flex');
+            entryModal.classList.remove('hidden');
+        });
+
+        modalCancel.addEventListener('click', () => {
+            entryModal.classList.add('hidden');
+            entryModal.classList.remove('flex');
+        });
+
+        modalSave.addEventListener('click', () => {
+            const type = document.getElementById('modal-type').value;
+            const name = document.getElementById('modal-name').value.trim();
+            const value = document.getElementById('modal-value').value.trim();
+
+            if (!name) {
+                alert("Name cannot be empty.");
+                return;
+            }
+            
+            if (devinfoData.entries.some(e => e.name === name)) {
+                alert("An entry with this name already exists.");
+                return;
+            }
+
+            devinfoData.entries.push({ type, name, value });
+            renderUI();
+            
+            entryModal.classList.add('hidden');
+            entryModal.classList.remove('flex');
+        });
+
+    </script>
+</body>
+</html>
