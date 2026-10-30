@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple File Manager Privacy Policy</title>
+    <meta name="description" content="Privacy policy for the Simple File Manager Android app.">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+    <style>
+        /* Same palette as the landing page (styles.css), laid out for long text. */
+        :root {
+            --background-color: #f5f5f5;
+            --text-color: #000000;
+            --card-background-color: #ffffff;
+            --subtitle-color: #757575;
+            --link-color: #2196f3;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background-color: #121212;
+                --text-color: #ffffff;
+                --card-background-color: #1e1e1e;
+                --subtitle-color: #bbbbbb;
+                --link-color: #90caf9;
+            }
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 32px 16px;
+            line-height: 1.6;
+        }
+        .card {
+            background-color: var(--card-background-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 24px 28px;
+            box-sizing: border-box;
+            overflow-wrap: anywhere;
+        }
+        h1 { font-weight: 500; font-size: 28px; margin: 0 0 12px; }
+        h2 { font-weight: 500; font-size: 20px; margin: 28px 0 8px; }
+        h1 + p { color: var(--subtitle-color); }
+        ul { padding-left: 22px; }
+        li { margin-bottom: 8px; }
+        a { color: var(--link-color); }
+    </style>
+</head>
+<body>
+    <main class="card">
+            <h1>Privacy Policy</h1>
+            <p>Simple File Manager<br>
+Last updated: 29 October 2026</p>
+            <p>Simple File Manager ("the app") is developed by Lunarixus ("the developer"). This policy explains what the app does with your data.</p>
+            <h2>Summary</h2>
+            <p>The app does not collect your personal data. Nothing is sent to the developer or to any third party: the app contains no analytics, advertising, tracking or crash-reporting services, and the developer does not run any server that the app talks to. Your data is only sent off your device when you use a feature that does so, and only to a destination you choose, as described below.</p>
+            <h2>What the app accesses on your device</h2>
+            <ul>
+            <li>Files and folders on your device's storage, including "All files access" if you grant it, so the app can browse, open, edit, copy, move, rename, delete, compress, extract and install them. This happens on your device.</li>
+            <li>Notifications, to show the progress of file transfers and whether the web server is running.</li>
+            <li>Network access, used only by the features described under "Features that send data off your device".</li>
+            <li>Root or Shizuku access, only if you grant it, to reach files the app could not otherwise access. Commands run on your device.</li>
+            </ul>
+            <h2>Data stored on your device</h2>
+            <p>The app keeps your settings, home screen shortcuts, a list of recently opened files, saved network shares and the identities of servers you have connected to. Passwords for saved network shares are encrypted with a key held in your device's secure hardware (Android Keystore).</p>
+            <p>This data stays on your device. If Android backup is turned on for your device, Android may include it in your device backup, which is handled by Google under your backup settings; saved passwords can only be decrypted on the device that encrypted them.</p>
+            <h2>Features that send data off your device</h2>
+            <p>These features only run when you use them, and only send data to destinations you choose:</p>
+            <ul>
+            <li>Network shares (SMB, FTP, FTPS, SFTP, SCP and WebDAV). The app connects to servers you add. Your username and password are sent to that server to sign in, and files you open or copy are transferred between your device and that server. FTP and WebDAV over http:// are not encrypted.</li>
+            <li>SFMShare. While SFMShare is turned on, the app announces this device's SFMShare name on your local network so nearby devices can find it. Files you choose to send go only to the device you pick, end-to-end encrypted by default. Incoming files are only received after you accept them, and are saved to Downloads/SFMShare.</li>
+            <li>Web server. While you have it running, devices on your local network can browse, download, upload, rename and delete files on this device through a web browser, protected by the password you set (required by default). The connection uses plain HTTP and is not encrypted. It stops when you stop it.</li>
+            <li>Installing apps. Packages you open are passed to Android's package installer, or installed through root or Shizuku if you choose that method.</li>
+            <li>Links. Opening the developer's page or a project page from Settings opens it in your web browser. Those websites have their own privacy policies.</li>
+            </ul>
+            <h2>Sharing and selling</h2>
+            <p>The developer does not sell, rent or share your data, because the developer never receives it.</p>
+            <h2>Data retention and deletion</h2>
+            <p>The developer holds no data about you, so there is nothing to retain or delete on the developer's side. You can remove everything the app stores on your device by clearing the app's storage in Android settings or by uninstalling the app. Files you receive or create remain in your storage until you delete them.</p>
+            <h2>Security</h2>
+            <p>Saved passwords are encrypted with the Android Keystore. SFMShare transfers are end-to-end encrypted and show a verification code to compare on both devices. SSH host keys and self-signed FTPS certificates are remembered on first connection, and a change is reported before your password is sent.</p>
+            <h2>Children</h2>
+            <p>The app is not directed at children under 13 and does not knowingly collect data from anyone, including children.</p>
+            <h2>Changes to this policy</h2>
+            <p>If this policy changes, the updated version will be published at the same address and in the app, with a new "Last updated" date.</p>
+            <h2>Contact</h2>
+            <p>For questions about this policy or your privacy, contact the developer using the email address shown on the app's Google Play listing, or through <a href="https://github.com/Lunarixus">https://github.com/Lunarixus</a>.</p>
+    </main>
+</body>
+</html>
